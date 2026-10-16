@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pythagoras Rescue Adventure</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f7f2;
+            color: #2d3748;
+            touch-action: manipulation;
+        }
+        .game-card {
+            background: #ffffff;
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        .btn-primary {
+            background-color: #f97316;
+            color: #ffffff;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(249, 115, 22, 0.3);
+        }
+        .btn-primary:hover {
+            background-color: #ea580c;
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background-color: #15803d;
+            color: #ffffff;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(21, 128, 61, 0.3);
+        }
+        .btn-secondary:hover {
+            background-color: #166534;
+            transform: translateY(-1px);
+        }
+        .draggable-square {
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            transition: transform 0.1s ease;
+        }
+        .draggable-square:active {
+            cursor: grabbing;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between" onload="initApp()">
+
+    <!-- Header -->
+    <header class="bg-[#15803d] text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-white text-[#15803d] p-2 rounded-xl font-extrabold text-xl shadow-inner">
+                    📐
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-base sm:text-lg tracking-wide">PYTHAGORAS RESCUE</h1>
+                    <p class="text-xs text-emerald-100 font-medium">Petualangan Matematika SMP</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div class="bg-[#166534] px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center space-x-1 shadow-sm">
+                    <span>🏆 Skor:</span>
+                    <span id="header-total-score" class="text-orange-300 font-bold text-sm">0</span>
+                    <span class="text-emerald-200">/ 950</span>
+                </div>
+                <button onclick="toggleAiChat()" class="bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-1.5 rounded-lg font-semibold transition shadow-sm flex items-center space-x-1">
+                    <span>🤖 Asisten AI</span>
+                </button>
+                <button onclick="confirmReset()" class="bg-red-700 hover:bg-red-800 text-white text-xs px-3 py-1.5 rounded-lg font-semibold transition shadow-sm">
+                    Ulangi
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-3xl w-full mx-auto p-4 sm:p-6 my-auto flex-grow flex flex-col justify-center">
+
+        <!-- 1. WELCOME SCREEN -->
+        <div id="screen-welcome" class="game-card p-6 sm:p-10 text-center space-y-6">
+            <div class="max-w-md mx-auto">
+                <div class="w-24 h-24 bg-emerald-100 text-[#15803d] rounded-full flex items-center justify-center mx-auto text-4xl shadow-inner mb-4">
+                    ⛰️🌲
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-[#15803d]">Pythagoras Rescue Adventure</h2>
+                <p class="text-gray-600 text-sm sm:text-base mt-2">
+                    Bantu tim penyelamat menyelesaikan misi di berbagai medan dengan menguasai Teorema Pythagoras secara berurutan tanpa jalan pintas!
+                </p>
+            </div>
+
+            <div class="bg-[#f7f7f2] p-4 rounded-xl max-w-md mx-auto text-left text-xs sm:text-sm space-y-2 text-gray-700 border border-emerald-100">
+                <p class="font-bold text-[#15803d]">📌 Ketentuan Petualangan:</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-600">
+                    <li>Alur wajib berurutan: Level 1 ➔ Asesmen ➔ Level 2 ➔ Asesmen ➔ dst.</li>
+                    <li>Tidak ada lompatan level; setiap tahap harus diselesaikan secara tuntas.</li>
+                    <li>Dilengkapi ilustrasi gambar di setiap level dan Asisten AI konsep mandiri.</li>
+                </ul>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="startAdventure()" class="btn-primary text-base sm:text-lg px-8 py-3 shadow-lg">
+                    🚀 Mulai Petualangan
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. LEVEL 1: TRIANGLE EXPLORER -->
+        <div id="screen-level1" class="game-card p-5 sm:p-8 space-y-6 hidden">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <span class="text-xs font-bold text-[#15803d] uppercase tracking-wider">Level 1 dari 4</span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-gray-800">Triangle Explorer</h2>
+                </div>
+                <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-semibold">Maks. 100 Poin</span>
+            </div>
+
+            <p class="text-xs sm:text-sm text-gray-600">
+                Eksplorasi bentuk geometri. Pilih bentuk segitiga yang merupakan <b>segitiga siku-siku</b> di antara pilihan berikut, lalu tekan konfirmasi.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 py-2">
+                <div onclick="selectLevel1Opt('A')" id="l1-opt-A" class="border-2 border-gray-200 bg-gray-50 rounded-xl p-4 text-center cursor-pointer hover:border-[#15803d] transition">
+                    <svg viewBox="0 0 100 100" class="w-24 h-24 mx-auto fill-emerald-50 stroke-[#15803d] stroke-2">
+                        <polygon points="15,85 85,85 15,15" />
+                        <polyline points="15,70 30,70 30,85" fill="none" stroke="#15803d" stroke-width="1.5" />
+                    </svg>
+                    <span class="font-bold text-sm text-gray-700 mt-2 block">Segitiga A</span>
+                </div>
+                <div onclick="selectLevel1Opt('B')" id="l1-opt-B" class="border-2 border-gray-200 bg-gray-50 rounded-xl p-4 text-center cursor-pointer hover:border-[#15803d] transition">
+                    <svg viewBox="0 0 100 100" class="w-24 h-24 mx-auto fill-emerald-50 stroke-[#15803d] stroke-2">
+                        <polygon points="10,85 90,85 45,20" />
+                    </svg>
+                    <span class="font-bold text-sm text-gray-700 mt-2 block">Segitiga B</span>
+                </div>
+                <div onclick="selectLevel1Opt('C')" id="l1-opt-C" class="border-2 border-gray-200 bg-gray-50 rounded-xl p-4 text-center cursor-pointer hover:border-[#15803d] transition">
+                    <svg viewBox="0 0 100 100" class="w-24 h-24 mx-auto fill-emerald-50 stroke-[#15803d] stroke-2">
+                        <polygon points="20,85 80,85 50,15" />
+                    </svg>
+                    <span class="font-bold text-sm text-gray-700 mt-2 block">Segitiga C</span>
+                </div>
+            </div>
+
+            <div id="feedback-l1" class="hidden p-3 rounded-lg text-sm font-medium text-center"></div>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="submitLevel1()" class="btn-secondary">Konfirmasi Pilihan</button>
+            </div>
+        </div>
+
+        <!-- 3. ASSESSMENT LEVEL 1 -->
+        <div id="screen-assessment-1" class="game-card p-6 sm:p-8 space-y-6 hidden text-center">
+            <div class="w-16 h-16 bg-emerald-100 text-[#15803d] rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                ⭐
+            </div>
+            <div>
+                <span class="text-xs font-bold text-[#15803d] uppercase tracking-wider">Penilaian Level 1</span>
+                <h2 class="text-2xl font-extrabold text-gray-800">Triangle Explorer Selesai</h2>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl max-w-md mx-auto space-y-3 shadow-inner text-left">
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Status Level:</span>
+                    <span class="font-bold text-emerald-700">Level Selesai</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Skor Diperoleh:</span>
+                    <span id="score-val-1" class="font-bold text-orange-600 text-base">0 / 100</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Persentase Pencapaian:</span>
+                    <span id="percent-val-1" class="font-bold text-gray-800">0%</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Evaluasi Performa:</span>
+                    <span id="perf-val-1" class="font-bold text-[#15803d]">-</span>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="startLevel2()" class="btn-primary text-base px-8 py-3 shadow-lg">
+                    Lanjut ke Level 2 ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- 4. LEVEL 2: DISCOVER THE RULE -->
+        <div id="screen-level2" class="game-card p-5 sm:p-8 space-y-6 hidden">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <span class="text-xs font-bold text-[#15803d] uppercase tracking-wider">Level 2 dari 4</span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-gray-800">Discover the Rule: Geometric Proof of Squares</h2>
+                </div>
+                <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-semibold">Maks. 150 Poin</span>
+            </div>
+
+            <p class="text-xs sm:text-sm text-gray-600">
+                <b>Tahap A:</b> Pasang ketiga persegi pada sisi segitiga siku-siku (sisi tegak <b>a = 3</b>, sisi tegak <b>b = 4</b>, dan sisi miring <b>c = 5</b>). Ketuk persegi di bawah lalu ketuk area zona penempatannya.
+            </p>
+
+            <!-- Exact Geometric Proof Illustration -->
+            <div class="bg-[#f7f7f2] border border-emerald-200 p-4 rounded-xl flex flex-col items-center justify-center space-y-3">
+                <div class="text-center font-bold text-xs sm:text-sm text-indigo-900 bg-white px-3 py-1.5 rounded-lg border shadow-sm w-full">
+                    Geometric Proof of the Pythagorean Theorem<br>
+                    <span class="text-emerald-700">a² + b² = c² &rarr; 9 + 16 = 25</span>
+                </div>
+
+                <div class="relative w-full max-w-sm h-80 bg-white border border-gray-200 rounded-xl shadow-inner flex items-center justify-center p-2">
+                    <svg viewBox="0 0 340 300" class="w-full h-full">
+                        <!-- Central Right Triangle (Orange) -->
+                        <polygon points="120,120 120,220 220,220" fill="#fed7aa" stroke="#c2410c" stroke-width="2.5" />
+                        <polyline points="120,200 140,200 140,220" fill="none" stroke="#c2410c" stroke-width="2" />
+                        
+                        <!-- Triangle side labels -->
+                        <text x="160" y="155" font-size="12" font-weight="bold" fill="#2563eb">c = 5 (Sisi Miring)</text>
+                        <text x="95" y="175" font-size="12" font-weight="bold" fill="#16a34a">b = 4</text>
+                        <text x="165" y="238" font-size="12" font-weight="bold" fill="#dc2626">a = 3</text>
+
+                        <!-- Square b=4 (Green) on left vertical side -->
+                        <g id="svg-sq-4" class="transition-all duration-300">
+                            <rect x="20" y="120" width="100" height="100" fill="#bbf7d0" stroke="#16a34a" stroke-width="2" rx="4" />
+                            <text x="50" y="175" font-size="14" font-weight="bold" fill="#166534">b² = 16</text>
+                        </g>
+
+                        <!-- Square a=3 (Red/Pink) on bottom horizontal side -->
+                        <g id="svg-sq-3" class="transition-all duration-300">
+                            <rect x="120" y="220" width="100" height="100" fill="#fecaca" stroke="#dc2626" stroke-width="2" rx="4" />
+                            <text x="150" y="275" font-size="14" font-weight="bold" fill="#991b1b">a² = 9</text>
+                        </g>
+
+                        <!-- Square c=5 (Blue) on hypotenuse -->
+                        <g id="svg-sq-5" class="transition-all duration-300">
+                            <polygon points="120,120 220,220 320,120 220,20" fill="#bfdbfe" stroke="#2563eb" stroke-width="2" />
+                            <text x="205" y="90" font-size="14" font-weight="bold" fill="#1e40af">c² = 25</text>
+                        </g>
+                    </svg>
+
+                    <!-- Click/Touch Drop Zones -->
+                    <div id="zone-3" onclick="placeSquare(3)" class="absolute bottom-2 right-20 w-24 h-12 border-2 border-dashed border-red-400 bg-red-50/70 rounded flex items-center justify-center text-[10px] font-bold text-red-700 cursor-pointer shadow-sm">
+                        <span id="label-zone-3">Pasang Persegi a=3</span>
+                    </div>
+                    <div id="zone-4" onclick="placeSquare(4)" class="absolute left-2 top-28 w-12 h-24 border-2 border-dashed border-emerald-400 bg-emerald-50/70 rounded flex items-center justify-center text-[10px] font-bold text-emerald-700 cursor-pointer shadow-sm">
+                        <span id="label-zone-4">Pasang b=4</span>
+                    </div>
+                    <div id="zone-5" onclick="placeSquare(5)" class="absolute right-4 top-16 w-16 h-16 border-2 border-dashed border-blue-400 bg-blue-50/70 rounded flex items-center justify-center text-[10px] font-bold text-blue-700 cursor-pointer shadow-sm transform rotate-45">
+                        <span id="label-zone-5" class="transform -rotate-45">c=5</span>
+                    </div>
+                </div>
+
+                <!-- Tray for squares -->
+                <div class="space-y-1.5 w-full max-w-sm text-center">
+                    <p class="text-xs font-bold text-gray-700">Persegi Tersedia (Ketuk persegi di bawah, lalu ketuk zona):</p>
+                    <div class="flex justify-center gap-3">
+                        <div id="sq-3" onclick="selectSquareTray(3)" class="draggable-square w-12 h-12 bg-red-100 border-2 border-red-400 rounded-lg flex flex-col items-center justify-center text-xs font-bold text-red-800 shadow-sm cursor-pointer">
+                            <span>a=3</span>
+                        </div>
+                        <div id="sq-4" onclick="selectSquareTray(4)" class="draggable-square w-12 h-12 bg-emerald-100 border-2 border-emerald-400 rounded-lg flex flex-col items-center justify-center text-xs font-bold text-emerald-800 shadow-sm cursor-pointer">
+                            <span>b=4</span>
+                        </div>
+                        <div id="sq-5" onclick="selectSquareTray(5)" class="draggable-square w-12 h-12 bg-blue-100 border-2 border-blue-400 rounded-lg flex flex-col items-center justify-center text-xs font-bold text-blue-800 shadow-sm cursor-pointer">
+                            <span>c=5</span>
+                        </div>
+                    </div>
+                    <p id="placement-status" class="text-xs text-gray-500 font-medium">Status: Belum semua persegi terpasang.</p>
+                </div>
+            </div>
+
+            <!-- Detailed Formula & Side Explanations -->
+            <div id="level2-stage-b" class="space-y-4 pt-3 border-t hidden">
+                <div class="bg-amber-50 border border-amber-200 p-4 rounded-xl text-xs sm:text-sm text-amber-900 space-y-2">
+                    <p class="font-bold text-amber-900">📖 Penjelasan Konsep & Bagian Sisi Segitiga Siku-Siku:</p>
+                    <ul class="list-disc list-inside space-y-1.5">
+                        <li><b>Sisi Siku-Siku (a dan b / alas dan tinggi):</b> Dua sisi yang saling tegak lurus dan membentuk sudut siku-siku (90&deg;). Di sini a = 3 dan b = 4.</li>
+                        <li><b>Sisi Miring (Hipotenusa / c):</b> Sisi terpanjang yang terletak tepat di seberang sudut siku-siku. Di sini c = 5.</li>
+                        <li><b>Persamaan Rumus Pembuktian (a&sup2; + b&sup2; = c&sup2;):</b> Luas persegi merah (a&sup2; = 9) ditambah luas persegi hijau (b&sup2; = 16) persis sama dengan luas persegi biru pada sisi miring (c&sup2; = 25).</li>
+                    </ul>
+                </div>
+
+                <p class="text-xs sm:text-sm text-gray-600 font-medium">
+                    <b>Tahap B:</b> Masukkan hasil perhitungan luas masing-masing persegi untuk membuktikan hubungan Teorema Pythagoras.
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Luas Persegi Sisi a=3 (a&sup2;):</label>
+                        <input type="number" id="input-l2-a" class="w-full border rounded-lg px-3 py-2 text-sm bg-white" placeholder="Masukkan luas...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Luas Persegi Sisi b=4 (b&sup2;):</label>
+                        <input type="number" id="input-l2-b" class="w-full border rounded-lg px-3 py-2 text-sm bg-white" placeholder="Masukkan luas...">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Luas Persegi Sisi Miring c=5 (c&sup2;):</label>
+                        <input type="number" id="input-l2-c" class="w-full border rounded-lg px-3 py-2 text-sm bg-white" placeholder="Masukkan luas...">
+                    </div>
+                </div>
+            </div>
+
+            <div id="feedback-l2" class="hidden p-3 rounded-lg text-sm font-medium text-center"></div>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="submitLevel2()" class="btn-secondary">Periksa Jawaban</button>
+            </div>
+        </div>
+
+        <!-- 5. ASSESSMENT LEVEL 2 -->
+        <div id="screen-assessment-2" class="game-card p-6 sm:p-8 space-y-6 hidden text-center">
+            <div class="w-16 h-16 bg-emerald-100 text-[#15803d] rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                🔍
+            </div>
+            <div>
+                <span class="text-xs font-bold text-[#15803d] uppercase tracking-wider">Penilaian Level 2</span>
+                <h2 class="text-2xl font-extrabold text-gray-800">Discover the Rule Selesai</h2>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl max-w-md mx-auto space-y-3 shadow-inner text-left">
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Status Level:</span>
+                    <span class="font-bold text-emerald-700">Level Selesai</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Skor Diperoleh:</span>
+                    <span id="score-val-2" class="font-bold text-orange-600 text-base">0 / 150</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Persentase Pencapaian:</span>
+                    <span id="percent-val-2" class="font-bold text-gray-800">0%</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Evaluasi Performa:</span>
+                    <span id="perf-val-2" class="font-bold text-[#15803d]">-</span>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="startLevel3()" class="btn-primary text-base px-8 py-3 shadow-lg">
+                    Lanjut ke Level 3 ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- 6. LEVEL 3: PYTHAGORAS CHALLENGE -->
+        <div id="screen-level3" class="game-card p-5 sm:p-8 space-y-6 hidden">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <span class="text-xs font-bold text-[#15803d] uppercase tracking-wider">Level 3 dari 4</span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-gray-800">Pythagoras Challenge</h2>
+                </div>
+                <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-semibold">Maks. 200 Poin + Bonus</span>
+            </div>
+
+            <div class="flex flex-wrap gap-2 border-b pb-3">
+                <button onclick="switchL3Tab(1)" id="l3-tab-1" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#15803d] text-white">Tantangan 1</button>
+                <button onclick="switchL3Tab(2)" id="l3-tab-2" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-200 text-gray-700">Tantangan 2</button>
+                <button onclick="switchL3Tab(3)" id="l3-tab-3" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-200 text-gray-700">Tantangan 3</button>
+                <button onclick="switchL3Tab(4)" id="l3-tab-4" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-200 text-gray-700">Tantangan Bonus</button>
+            </div>
+
+            <!-- Tantangan 1 -->
+            <div id="l3-content-1" class="space-y-4">
+                <p class="text-xs sm:text-sm text-gray-700 font-medium">
+                    <b>Tantangan 1:</b> Kedua sisi yang saling tegak lurus memiliki panjang <b>3 cm</b> dan <b>4 cm</b>. Tentukan panjang sisi di depan sudut siku-siku!
+                </p>
+                <div class="bg-white border rounded-xl p-3 flex justify-center shadow-inner">
+                    <svg viewBox="0 0 200 160" class="w-48 h-36">
+                        <polygon points="40,130 150,130 40,40" fill="#fed7aa" stroke="#c2410c" stroke-width="2.5" />
+                        <polyline points="40,110 60,110 60,130" fill="none" stroke="#c2410c" stroke-width="2" />
+                        <text x="90" y="75" font-size="14" font-weight="bold" fill="#2563eb">?</text>
+                        <text x="85" y="145" font-size="12" font-weight="bold" fill="#dc2626">3 cm</text>
+                        <text x="15" y="90" font-size="12" font-weight="bold" fill="#16a34a">4 cm</text>
+                    </svg>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <input type="number" id="l3-input-1" class="w-48 border rounded-lg px-3 py-2 text-sm bg-white" placeholder="Masukkan cm...">
+                    <button onclick="submitL3(1)" class="btn-secondary text-xs sm:text-sm py-2 px-4">Kirim</button>
+                </div>
+            </div>
+
+            <!-- Tantangan 2 -->
+            <div id="l3-content-2" class="space-y-4 hidden">
+                <p class="text-xs sm:text-sm text-gray-700 font-medium">
+                    <b>Tantangan 2:</b> Sisi di depan sudut siku-siku memiliki panjang <b>13 cm</b>. Salah satu sisi lainnya memiliki panjang <b>5 cm</b>. Tentukan panjang sisi tegak yang belum diketahui!
+                </p>
+                <div class="bg-white border rounded-xl p-3 flex justify-center shadow-inner">
+                    <svg viewBox="0 0 200 160" class="w-48 h-36">
+                        <polygon points="40,130 150,130 40,40" fill="#fed7aa" stroke="#c2410c" stroke-width="2.5" />
+                        <polyline points="40,110 60,110 60,130" fill="none" stroke="#c2410c" stroke-width="2" />
+                        <text x="90" y="75" font-size="12" font-weight="bold" fill="#2563eb">13 cm</text>
+                        <text x="85" y="145" font-size="12" font-weight="bold" fill="#dc2626">5 cm</text>
+                        <text x="15" y="90" font-size="14" font-weight="bold" fill="#16a34a">?</text>
+                    </svg>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <input type="number" id="l3-input-2" class="w-48 border rounded-lg px-3 py-2 text-sm bg-white" placeholder="Masukkan cm...">
+                    <button onclick="submitL3(2)" class="btn-secondary text-xs sm:text-sm py-2 px-4">Kirim</button>
+                </div>
+            </div>
+
+            <!-- Tantangan 3 -->
+            <div id="l3-content-3" class="space-y-4 hidden">
+                <p class="text-xs sm:text-sm text-gray-700 font-medium">
+                    <b>Tantangan 3:</b> Sisi di depan sudut siku-siku memiliki panjang <b>10 cm</b>. Salah satu sisi lainnya memiliki panjang <b>6 cm</b>. Tentukan panjang sisi tegak yang belum diketahui!
+                </p>
+                <div class="bg-white border rounded-xl p-3 flex justify-center shadow-inner">
+                    <svg viewBox="0 0 200 160" class="w-48 h-36">
+                        <polygon points="40,130 150,130 40,40" fill="#fed7aa" stroke="#c2410c" stroke-width="2.5" />
+                        <polyline points="40,110 60,110 60,130" fill="none" stroke="#c2410c" stroke-width="2" />
+                        <text x="90" y="75" font-size="12" font-weight="bold" fill="#2563eb">10 cm</text>
+                        <text x="85" y="145" font-size="12" font-weight="bold" fill="#dc2626">6 cm</text>
+                        <text x="15" y="90" font-size="14" font-weight="bold" fill="#16a34a">?</text>
+                    </svg>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <input type="number" id="l3-input-3" class="w-48 border rounded-lg px-3 py-2 text-sm bg-white" placeholder="Masukkan cm...">
+                    <button onclick="submitL3(3)" class="btn-secondary text-xs sm:text-sm py-2 px-4">Kirim</button>
+                </div>
+            </div>
+
+            <!-- Tantangan Bonus -->
+            <div id="l3-content-4" class="space-y-4 hidden">
+                <p class="text-xs sm:text-sm text-gray-700 font-medium">
+                    <b>Tantangan Bonus:</b> Sisi tegak segitiga siku-siku masing-masing <b>9 cm</b> dan <b>12 cm</b>. Tentukan panjang sisi miringnya!
+                </p>
+                <div class="bg-white border rounded-xl p-3 flex justify-center shadow-inner">
+                    <svg viewBox="0 0 200 160" class="w-48 h-36">
+                        <polygon points="40,130 150,130 40,40" fill="#fed7aa" stroke="#c2410c" stroke-width="2.5" />
+                        <polyline points="40,110 60,110 60,130" fill="none" stroke="#c2410c" stroke-width="2" />
+                        <text x="90" y="75" font-size="14" font-weight="bold" fill="#2563eb">?</text>
+                        <text x="85" y="145" font-size="12" font-weight="bold" fill="#dc2626">9 cm</text>
+                        <text x="10" y="90" font-size="12" font-weight="bold" fill="#16a34a">12 cm</text>
+                    </svg>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <input type="number" id="l3-input-4" class="w-48 border rounded-lg px-3 py-2 text-sm bg-white" placeholder="Masukkan cm...">
+                    <button onclick="submitL3(4)" class="btn-secondary text-xs sm:text-sm py-2 px-4">Kirim Bonus</button>
+                </div>
+            </div>
+
+            <div id="feedback-l3" class="hidden p-3 rounded-lg text-sm font-medium text-center"></div>
+
+            <div class="flex justify-between pt-2 border-t">
+                <span id="l3-progress-info" class="text-xs text-gray-500 font-medium self-center">Tantangan selesai: 0 / 3 utama</span>
+                <button onclick="finishLevel3()" class="btn-primary text-sm py-2 px-4">Selesai & Nilai Level 3</button>
+            </div>
+        </div>
+
+        <!-- 7. ASSESSMENT LEVEL 3 -->
+        <div id="screen-assessment-3" class="game-card p-6 sm:p-8 space-y-6 hidden text-center">
+            <div class="w-16 h-16 bg-emerald-100 text-[#15803d] rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                🏆
+            </div>
+            <div>
+                <span class="text-xs font-bold text-[#15803d] uppercase tracking-wider">Penilaian Level 3</span>
+                <h2 class="text-2xl font-extrabold text-gray-800">Pythagoras Challenge Selesai</h2>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl max-w-md mx-auto space-y-3 shadow-inner text-left">
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Status Level:</span>
+                    <span class="font-bold text-emerald-700">Level Selesai</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Skor Diperoleh:</span>
+                    <span id="score-val-3" class="font-bold text-orange-600 text-base">0 / 200</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Bonus Diperoleh:</span>
+                    <span id="bonus-val-3" class="font-bold text-emerald-700 text-base">0 Poin</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Persentase Pencapaian:</span>
+                    <span id="percent-val-3" class="font-bold text-gray-800">0%</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Evaluasi Performa:</span>
+                    <span id="perf-val-3" class="font-bold text-[#15803d]">-</span>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="startLevel4()" class="btn-primary text-base px-8 py-3 shadow-lg">
+                    Lanjut ke Level 4 ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- 8. LEVEL 4: RAMP RESCUE MISSION -->
+        <div id="screen-level4" class="game-card p-5 sm:p-8 space-y-6 hidden">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <span class="text-xs font-bold text-[#15803d] uppercase tracking-wider">Level 4 dari 4</span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-gray-800">Ramp Rescue Mission</h2>
+                </div>
+                <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-semibold">Maks. 450 Poin</span>
+            </div>
+
+            <div class="flex flex-wrap gap-2 border-b pb-3">
+                <button onclick="switchL4Tab(1)" id="l4-tab-1" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#15803d] text-white">Misi 1: Panjang Ramp</button>
+                <button onclick="switchL4Tab(2)" id="l4-tab-2" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-200 text-gray-700">Misi 2: Bandingkan Desain</button>
+                <button onclick="switchL4Tab(3)" id="l4-tab-3" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-200 text-gray-700">Misi 3: Pilih & Jelaskan</button>
+            </div>
+
+            <!-- Misi 1 -->
+            <div id="l4-content-1" class="space-y-4">
+                <p class="text-xs sm:text-sm text-gray-700 font-medium">
+                    <b>Misi 1 &mdash; Build the Rescue Ramp:</b> Ketinggian bangunan yang harus dicapai adalah <b>1,2 meter</b>, dan jarak horizontal yang tersedia adalah <b>1,6 meter</b>. Tentukan panjang ramp (sisi miring) yang menghubungkan kedua titik tersebut!
+                </p>
+                <div class="flex items-center space-x-3">
+                    <input type="number" step="0.1" id="l4-input-1" class="w-48 border rounded-lg px-3 py-2 text-sm bg-white" placeholder="Masukkan meter...">
+                    <button onclick="submitL4Mission(1)" class="btn-secondary text-xs sm:text-sm py-2 px-4">Kirim Misi 1</button>
+                </div>
+            </div>
+
+            <!-- Misi 2 -->
+            <div id="l4-content-2" class="space-y-4 hidden">
+                <p class="text-xs sm:text-sm text-gray-700 font-medium">
+                    <b>Misi 2 &mdash; Compare Two Designs:</b>
+                </p>
+                <ul class="list-disc list-inside text-xs sm:text-sm text-gray-600 space-y-1">
+                    <li><b>Rancangan A:</b> Tinggi 1,2 m, Jarak horizontal 1,6 m.</li>
+                    <li><b>Rancangan B:</b> Tinggi 1,2 m, Jarak horizontal 3,5 m.</li>
+                </ul>
+                <p class="text-xs sm:text-sm text-gray-700 font-medium">
+                    Tentukan total panjang material pegangan (handrail) jika dipasang di <b>kedua sisi</b> kedua rancangan tersebut! (Total panjang = 2 &times; (Panjang Ramp A + Panjang Ramp B)).
+                </p>
+                <div class="flex items-center space-x-3">
+                    <input type="number" step="0.1" id="l4-input-2" class="w-48 border rounded-lg px-3 py-2 text-sm bg-white" placeholder="Masukkan total meter...">
+                    <button onclick="submitL4Mission(2)" class="btn-secondary text-xs sm:text-sm py-2 px-4">Kirim Misi 2</button>
+                </div>
+            </div>
+
+            <!-- Misi 3 -->
+            <div id="l4-content-3" class="space-y-4 hidden">
+                <p class="text-xs sm:text-sm text-gray-700 font-medium">
+                    <b>Misi 3 &mdash; Choose Your Rescue Design:</b> Pilih salah satu rancangan (A atau B) untuk evakuasi darurat, lalu berikan penjelasan matematis mengapa rancangan tersebut dipilih berdasarkan perbandingan panjang dan kemiringannya!
+                </p>
+                <div class="space-y-3">
+                    <select id="l4-select-choice" class="w-full border rounded-lg px-3 py-2 text-sm bg-white">
+                        <option value="">-- Pilih Rancangan --</option>
+                        <option value="A">Rancangan A</option>
+                        <option value="B">Rancangan B</option>
+                    </select>
+                    <textarea id="l4-input-reason" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm bg-white" placeholder="Tuliskan alasan matematis perbandingan panjang ramp dan kemiringannya..."></textarea>
+                    <button onclick="submitL4Mission(3)" class="btn-secondary text-xs sm:text-sm py-2 px-4">Kirim Misi 3</button>
+                </div>
+            </div>
+
+            <div id="feedback-l4" class="hidden p-3 rounded-lg text-sm font-medium text-center"></div>
+
+            <div class="flex justify-between pt-2 border-t">
+                <span id="l4-progress-info" class="text-xs text-gray-500 font-medium self-center">Misi selesai: 0 / 3</span>
+                <button onclick="finishLevel4()" class="btn-primary text-sm py-2 px-4">Selesai & Nilai Level 4</button>
+            </div>
+        </div>
+
+        <!-- 9. ASSESSMENT LEVEL 4 -->
+        <div id="screen-assessment-4" class="game-card p-6 sm:p-8 space-y-6 hidden text-center">
+            <div class="w-16 h-16 bg-emerald-100 text-[#15803d] rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                🎯
+            </div>
+            <div>
+                <span class="text-xs font-bold text-[#15803d] uppercase tracking-wider">Penilaian Level 4</span>
+                <h2 class="text-2xl font-extrabold text-gray-800">Ramp Rescue Mission Selesai</h2>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl max-w-md mx-auto space-y-3 shadow-inner text-left">
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Skor Level 4:</span>
+                    <span id="score-val-4" class="font-bold text-orange-600 text-base">0 / 450</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Persentase Pencapaian:</span>
+                    <span id="percent-val-4" class="font-bold text-gray-800">0%</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="font-medium text-gray-600">Evaluasi Performa:</span>
+                    <span id="perf-val-4" class="font-bold text-[#15803d]">-</span>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="showFinalResults()" class="btn-primary text-base px-8 py-3 shadow-lg">
+                    Lihat Hasil Akhir Seluruh Petualangan ➔
+                </button>
+            </div>
+        </div>
+
+        <!-- 10. FINAL RESULT SCREEN -->
+        <div id="screen-final" class="game-card p-6 sm:p-8 space-y-6 hidden text-center">
+            <div class="w-20 h-20 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-4xl shadow-inner">
+                🏆
+            </div>
+            <div>
+                <span class="text-xs font-bold text-[#15803d] uppercase tracking-wider">Petualangan Selesai</span>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-800">Hasil Akhir Pythagoras Rescue</h2>
+            </div>
+
+            <div class="bg-emerald-50 border border-emerald-200 p-6 rounded-2xl max-w-md mx-auto space-y-3 shadow-inner text-left text-sm">
+                <div class="flex justify-between border-b pb-2">
+                    <span class="text-gray-600 font-medium">Skor Level 1:</span>
+                    <span id="final-l1" class="font-bold text-gray-800">0 / 100</span>
+                </div>
+                <div class="flex justify-between border-b pb-2">
+                    <span class="text-gray-600 font-medium">Skor Level 2:</span>
+                    <span id="final-l2" class="font-bold text-gray-800">0 / 150</span>
+                </div>
+                <div class="flex justify-between border-b pb-2">
+                    <span class="text-gray-600 font-medium">Skor Level 3 (Utama + Bonus):</span>
+                    <span id="final-l3" class="font-bold text-gray-800">0 / 200 (+50)</span>
+                </div>
+                <div class="flex justify-between border-b pb-2">
+                    <span class="text-gray-600 font-medium">Skor Level 4:</span>
+                    <span id="final-l4" class="font-bold text-gray-800">0 / 450</span>
+                </div>
+                <div class="flex justify-between pt-1 text-base">
+                    <span class="font-extrabold text-[#15803d]">Total Skor Keseluruhan:</span>
+                    <span id="final-total" class="font-extrabold text-orange-600">0 / 950</span>
+                </div>
+            </div>
+
+            <!-- Badges earned -->
+            <div class="space-y-2 max-w-md mx-auto text-left">
+                <p class="text-xs font-bold text-gray-700 uppercase tracking-wider text-center">Lencana Kehormatan Diperoleh:</p>
+                <div id="badges-container" class="grid grid-cols-2 gap-2">
+                    <div class="bg-gray-100 border p-2.5 rounded-xl text-center text-xs text-gray-400 font-medium" id="badge-1">&🛡️ Triangle Explorer</div>
+                    <div class="bg-gray-100 border p-2.5 rounded-xl text-center text-xs text-gray-400 font-medium" id="badge-2">📐 Pattern Finder</div>
+                    <div class="bg-gray-100 border p-2.5 rounded-xl text-center text-xs text-gray-400 font-medium" id="badge-3">⭐ Pythagoras Master</div>
+                    <div class="bg-gray-100 border p-2.5 rounded-xl text-center text-xs text-gray-400 font-medium" id="badge-4">👷 Junior Design Engineer</div>
+                </div>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="restartAdventure()" class="btn-primary text-base px-8 py-3 shadow-lg">
+                    🔄 Main Lagi dari Awal
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- AI Gemini Companion Modal -->
+    <div id="ai-chat-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-emerald-100">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xl">🤖</span>
+                    <h3 class="font-extrabold text-gray-800 text-base">Asisten AI Pemahaman Teorema</h3>
+                </div>
+                <button onclick="toggleAiChat()" class="text-gray-400 hover:text-gray-600 text-lg font-bold">&times;</button>
+            </div>
+            <p class="text-xs text-gray-600">
+                Tanyakan konsep Teorema Pythagoras, sisi miring, atau cara menganalisis soal tanpa meminta jawaban instan. Asisten AI siap membimbingmu!
+            </p>
+            <div id="ai-chat-messages" class="h-48 overflow-y-auto border rounded-xl p-3 bg-gray-50 text-xs space-y-2">
+                <div class="bg-emerald-100 text-emerald-900 p-2.5 rounded-xl">
+                    Halo! Ada yang ingin didiskusikan tentang materi segitiga siku-siku atau Teorema Pythagoras?
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <input type="text" id="ai-chat-input" class="flex-grow border rounded-xl px-3 py-2 text-xs bg-white" placeholder="Ketik pertanyaan konsep di sini...">
+                <button onclick="sendAiMessage()" class="btn-secondary text-xs py-2 px-4">Kirim</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-3 text-center text-xs text-gray-500">
+        Pythagoras Rescue Adventure &copy; 2026 &mdash; Pembelajaran Interaktif Teorema Pythagoras SMP
+    </footer>
+
+    <script>
+        // State Management
+        let gameState = {
+            currentScreen: 'welcome',
+            level1Done: false,
+            level2Done: false,
+            level3Done: false,
+            level4Done: false,
+            scores: { l1: 0, l2: 0, l3: 0, bonus: 0, l4: 0 },
+            l1Opt: null,
+            l2Placed: { sq3: false, sq4: false, sq5: false },
+            selectedTraySq: null,
+            l3Answers: { 1: false, 2: false, 3: false, 4: false },
+            l4Missions: { 1: false, 2: false, 3: false }
+        };
+
+        const STORAGE_KEY = 'pythagoras_rescue_save_2026_v2';
+
+        function initApp() {
+            loadProgress();
+            showScreen('screen-welcome');
+            updateHeaderScore();
+        }
+
+        function saveProgress() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+            } catch(e) { console.error('LocalStorage error', e); }
+        }
+
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    gameState = JSON.parse(saved);
+                }
+            } catch(e) { console.error('LocalStorage read error', e); }
+        }
+
+        function updateHeaderScore() {
+            const total = gameState.scores.l1 + gameState.scores.l2 + gameState.scores.l3 + gameState.scores.bonus + gameState.scores.l4;
+            document.getElementById('header-total-score').innerText = total;
+        }
+
+        function showScreen(screenId) {
+            const screens = [
+                'screen-welcome', 'screen-level1', 'screen-assessment-1',
+                'screen-level2', 'screen-assessment-2', 'screen-level3',
+                'screen-assessment-3', 'screen-level4', 'screen-assessment-4', 'screen-final'
+            ];
+            screens.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.add('hidden');
+            });
+            const target = document.getElementById(screenId);
+            if (target) {
+                target.classList.remove('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+            gameState.currentScreen = screenId;
+            saveProgress();
+            updateHeaderScore();
+        }
+
+        function confirmReset() {
+            if (confirm("Apakah Anda yakin ingin mengulang petualangan dari awal? Semua progres dan skor akan direset.")) {
+                localStorage.removeItem(STORAGE_KEY);
+                gameState = {
+                    currentScreen: 'welcome',
+                    level1Done: false,
+                    level2Done: false,
+                    level3Done: false,
+                    level4Done: false,
+                    scores: { l1: 0, l2: 0, l3: 0, bonus: 0, l4: 0 },
+                    l1Opt: null,
+                    l2Placed: { sq3: false, sq4: false, sq5: false },
+                    selectedTraySq: null,
+                    l3Answers: { 1: false, 2: false, 3: false, 4: false },
+                    l4Missions: { 1: false, 2: false, 3: false }
+                };
+                initApp();
+            }
+        }
+
+        // --- LEVEL 1 LOGIC ---
+        function startAdventure() {
+            showScreen('screen-level1');
+        }
+
+        function selectLevel1Opt(opt) {
+            gameState.l1Opt = opt;
+            ['A', 'B', 'C'].forEach(o => {
+                const card = document.getElementById(`l1-opt-${o}`);
+                if (o === opt) {
+                    card.className = "border-2 border-[#15803d] bg-emerald-50/70 rounded-xl p-4 text-center cursor-pointer shadow-sm";
+                } else {
+                    card.className = "border-2 border-gray-200 bg-gray-50 rounded-xl p-4 text-center cursor-pointer hover:border-[#15803d] transition";
+                }
+            });
+        }
+
+        function submitLevel1() {
+            const fb = document.getElementById('feedback-l1');
+            fb.classList.remove('hidden');
+            if (!gameState.l1Opt) {
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-amber-100 text-amber-800";
+                fb.innerText = "Masukkan jawaban terlebih dahulu.";
+                return;
+            }
+            if (gameState.l1Opt === 'A') {
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-emerald-100 text-emerald-800";
+                fb.innerText = "Benar! Tantangan berhasil diselesaikan.";
+                gameState.scores.l1 = 100;
+                gameState.level1Done = true;
+                setTimeout(() => showAssessment1(), 1200);
+            } else {
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-red-100 text-red-800";
+                fb.innerText = "Jawaban belum tepat. Coba lagi.";
+            }
+        }
+
+        function showAssessment1() {
+            document.getElementById('score-val-1').innerText = `${gameState.scores.l1} / 100`;
+            const pct = Math.round((gameState.scores.l1 / 100) * 100);
+            document.getElementById('percent-val-1').innerText = `${pct}%`;
+            document.getElementById('perf-val-1').innerText = getPerfCategory(pct);
+            showScreen('screen-assessment-1');
+        }
+
+        // --- LEVEL 2 LOGIC ---
+        function startLevel2() {
+            if (!gameState.level1Done) {
+                alert("Selesaikan Level 1 terlebih dahulu.");
+                return;
+            }
+            showScreen('screen-level2');
+            updateL2UI();
+        }
+
+        function selectSquareTray(sqNum) {
+            gameState.selectedTraySq = sqNum;
+            [3, 4, 5].forEach(n => {
+                const trayEl = document.getElementById(`sq-${n}`);
+                if (n === sqNum) {
+                    trayEl.classList.add('ring-4', 'ring-amber-400');
+                } else {
+                    trayEl.classList.remove('ring-4', 'ring-amber-400');
+                }
+            });
+        }
+
+        function placeSquare(zoneNum) {
+            if (!gameState.selectedTraySq) {
+                alert("Pilih persegi di baki bawah terlebih dahulu!");
+                return;
+            }
+            if (gameState.selectedTraySq === zoneNum) {
+                gameState.l2Placed[`sq${zoneNum}`] = true;
+                gameState.selectedTraySq = null;
+                updateL2UI();
+            } else {
+                alert("Jawaban belum tepat. Coba lagi.");
+                gameState.selectedTraySq = null;
+                updateL2UI();
+            }
+        }
+
+        function updateL2UI() {
+            [3, 4, 5].forEach(n => {
+                const trayEl = document.getElementById(`sq-${n}`);
+                const zoneEl = document.getElementById(`zone-${n}`);
+                const svgEl = document.getElementById(`svg-sq-${n}`);
+
+                trayEl.classList.remove('ring-4', 'ring-amber-400');
+
+                if (gameState.l2Placed[`sq${n}`]) {
+                    trayEl.style.opacity = '0.3';
+                    trayEl.style.pointerEvents = 'none';
+                    if (zoneEl) zoneEl.style.display = 'none';
+                    if (svgEl) svgEl.style.opacity = '1';
+                } else {
+                    trayEl.style.opacity = '1';
+                    trayEl.style.pointerEvents = 'auto';
+                    if (zoneEl) zoneEl.style.display = 'flex';
+                    if (svgEl) svgEl.style.opacity = '0.3';
+                }
+            });
+
+            const allPlaced = gameState.l2Placed.sq3 && gameState.l2Placed.sq4 && gameState.l2Placed.sq5;
+            const statusEl = document.getElementById('placement-status');
+            const stageB = document.getElementById('level2-stage-b');
+
+            if (allPlaced) {
+                statusEl.innerText = "Status: Semua persegi berhasil dipasang dengan benar!";
+                statusEl.className = "text-xs text-emerald-700 font-bold";
+                stageB.classList.remove('hidden');
+            } else {
+                statusEl.innerText = "Status: Lanjutkan memasang ketiga persegi.";
+                statusEl.className = "text-xs text-gray-500 font-medium";
+                stageB.classList.add('hidden');
+            }
+        }
+
+        function submitLevel2() {
+            const fb = document.getElementById('feedback-l2');
+            fb.classList.remove('hidden');
+
+            const allPlaced = gameState.l2Placed.sq3 && gameState.l2Placed.sq4 && gameState.l2Placed.sq5;
+            if (!allPlaced) {
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-amber-100 text-amber-800";
+                fb.innerText = "Masukkan jawaban terlebih dahulu.";
+                return;
+            }
+
+            const valA = parseInt(document.getElementById('input-l2-a').value);
+            const valB = parseInt(document.getElementById('input-l2-b').value);
+            const valC = parseInt(document.getElementById('input-l2-c').value);
+
+            if (isNaN(valA) || isNaN(valB) || isNaN(valC)) {
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-amber-100 text-amber-800";
+                fb.innerText = "Masukkan jawaban terlebih dahulu.";
+                return;
+            }
+
+            if (valA === 9 && valB === 16 && valC === 25) {
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-emerald-100 text-emerald-800";
+                fb.innerText = "Benar! Tantangan berhasil diselesaikan.";
+                gameState.scores.l2 = 150;
+                gameState.level2Done = true;
+                setTimeout(() => showAssessment2(), 1200);
+            } else {
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-red-100 text-red-800";
+                fb.innerText = "Jawaban belum tepat. Coba lagi.";
+            }
+        }
+
+        function showAssessment2() {
+            document.getElementById('score-val-2').innerText = `${gameState.scores.l2} / 150`;
+            const pct = Math.round((gameState.scores.l2 / 150) * 100);
+            document.getElementById('percent-val-2').innerText = `${pct}%`;
+            document.getElementById('perf-val-2').innerText = getPerfCategory(pct);
+            showScreen('screen-assessment-2');
+        }
+
+        // --- LEVEL 3 LOGIC ---
+        function startLevel3() {
+            if (!gameState.level2Done) {
+                alert("Selesaikan Level 2 terlebih dahulu.");
+                return;
+            }
+            showScreen('screen-level3');
+            updateL3Progress();
+        }
+
+        function switchL3Tab(tabNum) {
+            [1, 2, 3, 4].forEach(n => {
+                const content = document.getElementById(`l3-content-${n}`);
+                const btn = document.getElementById(`l3-tab-${n}`);
+                if (n === tabNum) {
+                    content.classList.remove('hidden');
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-[#15803d] text-white";
+                } else {
+                    content.classList.add('hidden');
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-200 text-gray-700";
+                }
+            });
+        }
+
+        function submitL3(challengeNum) {
+            const fb = document.getElementById('feedback-l3');
+            fb.classList.remove('hidden');
+            const val = parseFloat(document.getElementById(`l3-input-${challengeNum}`).value);
+
+            if (isNaN(val)) {
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-amber-100 text-amber-800";
+                fb.innerText = "Masukkan jawaban terlebih dahulu.";
+                return;
+            }
+
+            let correct = false;
+            if (challengeNum === 1 && val === 5) correct = true;
+            if (challengeNum === 2 && val === 12) correct = true;
+            if (challengeNum === 3 && val === 8) correct = true;
+            if (challengeNum === 4 && val === 15) correct = true;
+
+            if (correct) {
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-emerald-100 text-emerald-800";
+                fb.innerText = "Benar! Tantangan berhasil diselesaikan.";
+                gameState.l3Answers[challengeNum] = true;
+                if (challengeNum === 4) {
+                    gameState.scores.bonus = 50;
+                }
+                updateL3Progress();
+            } else {
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-red-100 text-red-800";
+                fb.innerText = "Jawaban belum tepat. Coba lagi.";
+            }
+        }
+
+        function updateL3Progress() {
+            const mainCount = (gameState.l3Answers[1] ? 1 : 0) + (gameState.l3Answers[2] ? 1 : 0) + (gameState.l3Answers[3] ? 1 : 0);
+            document.getElementById('l3-progress-info').innerText = `Tantangan selesai: ${mainCount} / 3 utama`;
+            gameState.scores.l3 = mainCount * 66; 
+            if (mainCount === 3) gameState.scores.l3 = 200;
+        }
+
+        function finishLevel3() {
+            const mainCount = (gameState.l3Answers[1] ? 1 : 0) + (gameState.l3Answers[2] ? 1 : 0) + (gameState.l3Answers[3] ? 1 : 0);
+            if (mainCount < 3) {
+                alert("Selesaikan minimal 3 tantangan utama terlebih dahulu.");
+                return;
+            }
+            gameState.level3Done = true;
+            showAssessment3();
+        }
+
+        function showAssessment3() {
+            document.getElementById('score-val-3').innerText = `${gameState.scores.l3} / 200`;
+            document.getElementById('bonus-val-3').innerText = `${gameState.scores.bonus} Poin`;
+            const totalEarned = gameState.scores.l3 + gameState.scores.bonus;
+            const pct = Math.round((totalEarned / 250) * 100);
+            document.getElementById('percent-val-3').innerText = `${pct}%`;
+            document.getElementById('perf-val-3').innerText = getPerfCategory(pct);
+            showScreen('screen-assessment-3');
+        }
+
+        // --- LEVEL 4 LOGIC ---
+        function startLevel4() {
+            if (!gameState.level3Done) {
+                alert("Selesaikan Level 3 terlebih dahulu.");
+                return;
+            }
+            showScreen('screen-level4');
+            updateL4Progress();
+        }
+
+        function switchL4Tab(tabNum) {
+            [1, 2, 3].forEach(n => {
+                const content = document.getElementById(`l4-content-${n}`);
+                const btn = document.getElementById(`l4-tab-${n}`);
+                if (n === tabNum) {
+                    content.classList.remove('hidden');
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-[#15803d] text-white";
+                } else {
+                    content.classList.add('hidden');
+                    btn.className = "px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-200 text-gray-700";
+                }
+            });
+        }
+
+        function submitL4Mission(missionNum) {
+            const fb = document.getElementById('feedback-l4');
+            fb.classList.remove('hidden');
+
+            if (missionNum === 1) {
+                const val = parseFloat(document.getElementById('l4-input-1').value);
+                if (isNaN(val)) {
+                    fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-amber-100 text-amber-800";
+                    fb.innerText = "Masukkan jawaban terlebih dahulu.";
+                    return;
+                }
+                if (Math.abs(val - 2.0) < 0.05) {
+                    fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-emerald-100 text-emerald-800";
+                    fb.innerText = "Benar! Tantangan berhasil diselesaikan.";
+                    gameState.l4Missions[1] = true;
+                    gameState.scores.l4 += 100;
+                } else {
+                    fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-red-100 text-red-800";
+                    fb.innerText = "Jawaban belum tepat. Coba lagi.";
+                }
+            } else if (missionNum === 2) {
+                const val = parseFloat(document.getElementById('l4-input-2').value);
+                if (isNaN(val)) {
+                    fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-amber-100 text-amber-800";
+                    fb.innerText = "Masukkan jawaban terlebih dahulu.";
+                    return;
+                }
+                if (Math.abs(val - 11.4) < 0.1) {
+                    fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-emerald-100 text-emerald-800";
+                    fb.innerText = "Benar! Tantangan berhasil diselesaikan.";
+                    gameState.l4Missions[2] = true;
+                    gameState.scores.l4 += 200;
+                } else {
+                    fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-red-100 text-red-800";
+                    fb.innerText = "Jawaban belum tepat. Coba lagi.";
+                }
+            } else if (missionNum === 3) {
+                const choice = document.getElementById('l4-select-choice').value;
+                const reason = document.getElementById('l4-input-reason').value.trim();
+                if (!choice || reason.length < 5) {
+                    fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-amber-100 text-amber-800";
+                    fb.innerText = "Masukkan jawaban terlebih dahulu.";
+                    return;
+                }
+                fb.className = "p-3 rounded-lg text-sm font-medium text-center bg-emerald-100 text-emerald-800";
+                fb.innerText = "Benar! Tantangan berhasil diselesaikan.";
+                gameState.l4Missions[3] = true;
+                gameState.scores.l4 += 150;
+            }
+            updateL4Progress();
+        }
+
+        function updateL4Progress() {
+            const count = (gameState.l4Missions[1] ? 1 : 0) + (gameState.l4Missions[2] ? 1 : 0) + (gameState.l4Missions[3] ? 1 : 0);
+            document.getElementById('l4-progress-info').innerText = `Misi selesai: ${count} / 3`;
+        }
+
+        function finishLevel4() {
+            const count = (gameState.l4Missions[1] ? 1 : 0) + (gameState.l4Missions[2] ? 1 : 0) + (gameState.l4Missions[3] ? 1 : 0);
+            if (count < 3) {
+                alert("Selesaikan ketiga misi Ramp Rescue terlebih dahulu.");
+                return;
+            }
+            gameState.level4Done = true;
+            showAssessment4();
+        }
+
+        function showAssessment4() {
+            document.getElementById('score-val-4').innerText = `${gameState.scores.l4} / 450`;
+            const pct = Math.round((gameState.scores.l4 / 450) * 100);
+            document.getElementById('percent-val-4').innerText = `${pct}%`;
+            document.getElementById('perf-val-4').innerText = getPerfCategory(pct);
+            showScreen('screen-assessment-4');
+        }
+
+        // --- FINAL RESULTS & BADGES ---
+        function showFinalResults() {
+            document.getElementById('final-l1').innerText = `${gameState.scores.l1} / 100`;
+            document.getElementById('final-l2').innerText = `${gameState.scores.l2} / 150`;
+            document.getElementById('final-l3').innerText = `${gameState.scores.l3} / 200 (+${gameState.scores.bonus})`;
+            document.getElementById('final-l4').innerText = `${gameState.scores.l4} / 450`;
+
+            const total = gameState.scores.l1 + gameState.scores.l2 + gameState.scores.l3 + gameState.scores.bonus + gameState.scores.l4;
+            document.getElementById('final-total').innerText = `${total} / 950`;
+
+            if (gameState.level1Done) activateBadge(1, '🛡️ Triangle Explorer');
+            if (gameState.level2Done) activateBadge(2, '📐 Pattern Finder');
+            if (gameState.level3Done) activateBadge(3, '⭐ Pythagoras Master');
+            if (gameState.level4Done) activateBadge(4, '👷 Junior Design Engineer');
+
+            showScreen('screen-final');
+        }
+
+        function activateBadge(id, title) {
+            const b = document.getElementById(`badge-${id}`);
+            b.className = "bg-emerald-100 border border-emerald-300 p-2.5 rounded-xl text-center text-xs text-emerald-800 font-bold shadow-sm";
+            b.innerText = title;
+        }
+
+        function restartAdventure() {
+            if (confirm("Mulai ulang petualangan dari awal?")) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        function getPerfCategory(pct) {
+            if (pct >= 90) return "Sangat Baik";
+            if (pct >= 75) return "Baik";
+            if (pct >= 60) return "Cukup";
+            return "Perlu Latihan";
+        }
+
+        // --- AI GEMINI ASSISTANT COMPANION ---
+        function toggleAiChat() {
+            const modal = document.getElementById('ai-chat-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        async function sendAiMessage() {
+            const inputEl = document.getElementById('ai-chat-input');
+            const msgBox = document.getElementById('ai-chat-messages');
+            const text = inputEl.value.trim();
+            if (!text) return;
+
+            const userDiv = document.createElement('div');
+            userDiv.className = "bg-emerald-50 text-gray-800 p-2.5 rounded-xl text-right font-medium";
+            userDiv.innerText = text;
+            msgBox.appendChild(userDiv);
+            inputEl.value = '';
+            msgBox.scrollTop = msgBox.scrollHeight;
+
+            const loadingDiv = document.createElement('div');
+            loadingDiv.className = "bg-gray-200 text-gray-600 p-2.5 rounded-xl animate-pulse";
+            loadingDiv.innerText = "Sedang berpikir...";
+            msgBox.appendChild(loadingDiv);
+            msgBox.scrollTop = msgBox.scrollHeight;
+
+            try {
+                const systemPrompt = "Bertindaklah sebagai tutor matematika yang ramah untuk siswa SMP. Berikan penjelasan konseptual mengenai Teorema Pythagoras, sisi miring (hipotenusa), atau luas persegi, DILARANG memberikan jawaban langsung atau rumus instan untuk soal aktif.";
+                const apiKey = "";
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+                
+                const payload = {
+                    contents: [{ role: 'user', parts: [{ text }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                const aiReply = result.candidates?.[0]?.content?.parts?.[0]?.text || "Mari kita pelajari bersama konsep sisi segitiga siku-siku!";
+
+                msgBox.removeChild(loadingDiv);
+                const aiDiv = document.createElement('div');
+                aiDiv.className = "bg-emerald-100 text-emerald-900 p-2.5 rounded-xl font-medium";
+                aiDiv.innerText = aiReply;
+                msgBox.appendChild(aiDiv);
+                msgBox.scrollTop = msgBox.scrollHeight;
+            } catch(e) {
+                msgBox.removeChild(loadingDiv);
+                const errDiv = document.createElement('div');
+                errDiv.className = "bg-red-100 text-red-800 p-2.5 rounded-xl";
+                errDiv.innerText = "Gagal terhubung ke Asisten AI. Diskusikan dengan gurumu ya!";
+                msgBox.appendChild(errDiv);
+            }
+        }
+    </script>
+</body>
+</html>
